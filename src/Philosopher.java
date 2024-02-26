@@ -25,12 +25,18 @@ public class Philosopher implements Runnable{
     public void run() {
         while (countOfEating > 0) {
             try {
-                if (rightHand.get() && leftHand.get() && !isDigestFood) {
-                    eat();
-                } else {
-                    think();
-                    isDigestFood = false;
+                synchronized (rightHand) {
+                    if (rightHand.get()) {
+                        synchronized (leftHand) {
+                            if (leftHand.get()) {
+                                if (!isDigestFood) {
+                                    eat();
+                                }
+                            }
+                        }
+                    }
                 }
+                think();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -54,6 +60,7 @@ public class Philosopher implements Runnable{
     private void think() throws InterruptedException {
         System.out.println(name + " думает");
         Thread.sleep(THINKING_TIME);
+        isDigestFood = false;
         System.out.println(name + " подумал и проголодался");
     }
 }
